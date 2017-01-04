@@ -207,7 +207,7 @@ public class SamReaderTest {
         Assert.assertEquals(count, 3);
     }
 
-    @Test()
+    @Test(expectedExceptions = IllegalStateException.class)
     public void testAssertingIteratorCorrectlyFailsWhenOutOfOrder(){
         final List<SAMRecord> unsorted = Arrays.asList(createRecord(10, 1), createRecord( 1, 1));
         final SamReader.AssertingIterator iter = new SamReader.AssertingIterator(wrapInCloseableIterator(unsorted));
