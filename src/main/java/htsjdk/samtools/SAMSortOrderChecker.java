@@ -63,6 +63,7 @@ public class SAMSortOrderChecker {
 
     /**
      * Return the sort key used for the given sort order.  Useful in error messages.
+     * This should only be used in error messages and program correctness should not rely on this.
      */
     public String getSortKey(final SAMRecord rec) {
         switch (sortOrder) {
@@ -70,9 +71,8 @@ public class SAMSortOrderChecker {
                 return rec.getReferenceName() + ":" + rec.getAlignmentStart();
             case queryname:
                 return rec.getReadName();
-            case unsorted:
             default:
-                return null;
+                return rec.getSAMString().trim();
         }
     }
 }
