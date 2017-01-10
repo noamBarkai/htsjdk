@@ -170,7 +170,6 @@ public class SamReaderTest {
         Assert.assertTrue(samRec.getHeader() == null);
     }
 
-
     @Test
     public void testAssertingIteratorUsesLenientOrdering(){
         //the coordinate comparator's strict sort sorts lower mapping qualities first
@@ -245,8 +244,7 @@ public class SamReaderTest {
         rec.setMappingQuality(mappingQuality);
         return rec;
     }
-
-
+    
     private static SAMFileHeader getHeader() {
         final SAMFileHeader header = new SAMFileHeader();
         header.addSequence(new SAMSequenceRecord("1", 1000));
