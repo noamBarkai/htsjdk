@@ -363,42 +363,61 @@ public class SAMFileWriterFactory implements Cloneable {
     }
 
     /**
-     * Create either a SAM or a BAM writer based on examination of the outputFile extension.
+     * Create either a SAM or a BAM writer based on examination of the outputFile extension. The method fails
+     * with {@link IllegalArgumentException} if the outputFile extension is neither .sam not .bam.
      *
      * @param header     entire header. Sort order is determined by the sortOrder property of this arg.
      * @param presorted  presorted if true, SAMRecords must be added to the SAMFileWriter in order that agrees with header.sortOrder.
      * @param outputFile where to write the output.  Must end with .sam or .bam.
      * @return SAM or BAM writer based on file extension of outputFile.
+     * @throws IllegalArgumentException if the file extension is neither .sam nor .bam.
      */
     public SAMFileWriter makeSAMOrBAMWriter(final SAMFileHeader header, final boolean presorted, final File outputFile) {
         final String filename = outputFile.getName();
-        if (filename.endsWith(BamFileIoUtils.BAM_FILE_EXTENSION)) {
-            return makeBAMWriter(header, presorted, outputFile);
+        boolean isSAM = filename.endsWith(SamReader.Type.SAM_TYPE.fileExtension());
+        boolean isBAM = filename.endsWith(SamReader.Type.BAM_TYPE.fileExtension());
+
+        if (!isSAM && !isBAM) {
+            throw new IllegalArgumentException("Expecting either SAM or BAM format");
         }
-        if (filename.endsWith(".sam")) {
-            return makeSAMWriter(header, presorted, outputFile);
-        }
-        return makeBAMWriter(header, presorted, outputFile);
+
+        return makeWriter(header, presorted, outputFile, null);
     }
 
     /**
      *
      * Create a SAM, BAM or CRAM writer based on examination of the outputFile extension.
+     * The method assumes BAM file format for unknown file extensions.
      *
      * @param header header. Sort order is determined by the sortOrder property of this arg.
      * @param presorted if true, SAMRecords must be added to the SAMFileWriter in order that agrees with header.sortOrder.
-     * @param outputFile where to write the output.  Must end with .sam, .bam or .cram.
+     * @param outputFile where to write the output.  Should end with .sam, .bam or .cram.
      * @param referenceFasta reference sequence file
-     * @return SAMFileWriter appropriate for the file type specified in outputFile
+     * @return SAMFileWriter appropriate for SAM and CRAM file types specified in outputFile, or a BAM writer for all other types
      *
      */
     public SAMFileWriter makeWriter(final SAMFileHeader header, final boolean presorted, final File outputFile, final File referenceFasta) {
-        if (outputFile.getName().endsWith(SamReader.Type.CRAM_TYPE.fileExtension())) {
+        final String filename = outputFile.getName();
+        if (filename.endsWith(SamReader.Type.CRAM_TYPE.fileExtension())) {
+            if (referenceFasta == null && Defaults.REFERENCE_FASTA == null) {
+                if (Defaults.USE_CRAM_REF_DOWNLOAD) {
+                    log.warn("Reference file is not provided, remote sequence service may be used when writing CRAM file: " + outputFile.getAbsolutePath());
+                } else {
+                    log.warn("Neither reference file nor sequence service are provided when writing CRAM file: " + outputFile.getAbsolutePath());
+                }
+            }
             return makeCRAMWriter(header, presorted, outputFile, referenceFasta);
         }
-        else {
-            return makeSAMOrBAMWriter(header, presorted, outputFile);
+
+        if (filename.endsWith(SamReader.Type.SAM_TYPE.fileExtension())) {
+            return makeSAMWriter(header, presorted, outputFile);
         }
+
+        if (!filename.endsWith(SamReader.Type.BAM_TYPE.fileExtension())) {
+            log.warn("Unknown file extension, assuming BAM format when writing file: " + outputFile.getAbsolutePath());
+        }
+
+        return makeBAMWriter(header, presorted, outputFile);
     }
 
     /**
