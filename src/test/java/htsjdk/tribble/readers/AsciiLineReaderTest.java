@@ -1,10 +1,12 @@
 package htsjdk.tribble.readers;
 
 import htsjdk.tribble.TestUtils;
+import org.testng.Assert;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
+import java.io.ByteArrayInputStream;
 import java.io.FileInputStream;
 import java.io.InputStream;
 
@@ -16,16 +18,6 @@ import static org.testng.Assert.assertTrue;
  * Date: 2012/05/09
  */
 public class AsciiLineReaderTest {
-    @BeforeMethod
-    public void setUp() throws Exception {
-
-    }
-
-    @AfterMethod
-    public void tearDown() throws Exception {
-
-    }
-
     /**
      * Test that we read the correct number of lines
      * from a file
@@ -48,5 +40,21 @@ public class AsciiLineReaderTest {
 
         assertEquals(expectedNumber, actualLines);
 
+    }
+
+    @Test public void voidTestLineEndingLength() throws Exception {
+        final String input = "Hello\nThis\rIs A Silly Test\r\nSo There";
+        final InputStream is = new ByteArrayInputStream(input.getBytes());
+        final AsciiLineReader in = new AsciiLineReader(is);
+
+        Assert.assertEquals(in.getLineTerminatorLength(), -1);
+        Assert.assertEquals(in.readLine(), "Hello");
+        Assert.assertEquals(in.getLineTerminatorLength(), 1);
+        Assert.assertEquals(in.readLine(), "This");
+        Assert.assertEquals(in.getLineTerminatorLength(), 1);
+        Assert.assertEquals(in.readLine(), "Is A Silly Test");
+        Assert.assertEquals(in.getLineTerminatorLength(), 2);
+        Assert.assertEquals(in.readLine(), "So There");
+        Assert.assertEquals(in.getLineTerminatorLength(), 0);
     }
 }
