@@ -68,10 +68,9 @@ public class AsciiLineReader implements LineReader, LocationAware {
 
     /** Returns the length of the line terminator read after the last read line.  Returns either:
      * -1 if no line has been read
-     * 0  after the last line if the last line in the file had not CR or LF line ending
+     * 0  after the last line if the last line in the file had no CR or LF line ending
      * 1  if the line ended with CR or LF
      * 2  if the line ended with CR and LF
-     * terminator - either one or two bytes.
      */
     public int getLineTerminatorLength() {
         return this.lineTerminatorLength;
