@@ -57,4 +57,16 @@ public class AsciiLineReaderTest {
         Assert.assertEquals(in.readLine(), "So There");
         Assert.assertEquals(in.getLineTerminatorLength(), 0);
     }
+
+    @Test public void voidTestLineEndingLengthAtEof() throws Exception {
+        final String input = "Hello\nWorld\r\n";
+        final InputStream is = new ByteArrayInputStream(input.getBytes());
+        final AsciiLineReader in = new AsciiLineReader(is);
+
+        Assert.assertEquals(in.getLineTerminatorLength(), -1);
+        Assert.assertEquals(in.readLine(), "Hello");
+        Assert.assertEquals(in.getLineTerminatorLength(), 1);
+        Assert.assertEquals(in.readLine(), "World");
+        Assert.assertEquals(in.getLineTerminatorLength(), 2);
+    }
 }
